@@ -15,6 +15,14 @@ impl Analyzer {
             end: 0.0,
         };
         let mut frametime_stats = HashMap::new();
+        let mut save_count = 0;
+        let mut shared_seed_set_count = 0;
+        let mut button_set_count = 0;
+        let mut lgagst_min_speed_set_count = 0;
+        let mut reset_count = 0;
+        let mut comment_count = 0;
+        let mut change_angle_count = 0;
+        let mut target_yaw_override_count = 0;
 
         for line in &hltas.lines {
             match line {
@@ -62,20 +70,18 @@ impl Analyzer {
                     }
                     final_time_range.end += fb_time;
                 }
-                Line::Save(_) => todo!(),
-                Line::SharedSeed(_) => todo!(),
-                Line::Buttons(_) => todo!(),
-                Line::LGAGSTMinSpeed(_) => todo!(),
-                Line::Reset { .. } => todo!(),
-                Line::Comment(_) => todo!(),
-                Line::VectorialStrafing(_) => todo!(),
-                Line::VectorialStrafingConstraints(_) => todo!(),
-                Line::Change(_) => todo!(),
-                Line::TargetYawOverride(_) => todo!(),
+                Line::Save(_) => save_count += 1,
+                Line::SharedSeed(_) => shared_seed_set_count += 1,
+                Line::Buttons(_) => button_set_count += 1,
+                Line::LGAGSTMinSpeed(_) => lgagst_min_speed_set_count += 1,
+                Line::Reset { .. } => reset_count += 1,
+                Line::Comment(_) => comment_count += 1,
+                Line::VectorialStrafing(_) => (),
+                Line::VectorialStrafingConstraints(_) => (),
+                Line::Change(_) => change_angle_count += 1,
+                Line::TargetYawOverride(_) => target_yaw_override_count += 1,
             }
         }
-
-        // calculate final time bounds
 
         Ok(AnalyzerResult {
             final_time_range,
@@ -83,6 +89,14 @@ impl Analyzer {
                 .into_iter()
                 .map(|(s, v)| (s.to_owned(), v))
                 .collect(),
+            save_count,
+            shared_seed_set_count,
+            button_set_count,
+            lgagst_min_speed_set_count,
+            reset_count,
+            comment_count,
+            change_angle_count,
+            target_yaw_override_count,
         })
     }
 }
@@ -96,4 +110,12 @@ pub enum Error {
 pub struct AnalyzerResult {
     pub final_time_range: Range<f64>,
     pub frametime_stats: HashMap<String, Range<u128>>,
+    pub save_count: u128,
+    pub shared_seed_set_count: u128,
+    pub button_set_count: u128,
+    pub lgagst_min_speed_set_count: u128,
+    pub reset_count: u128,
+    pub comment_count: u128,
+    pub change_angle_count: u128,
+    pub target_yaw_override_count: u128,
 }
