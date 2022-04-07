@@ -1,6 +1,7 @@
 use std::{num::NonZeroU32, ops::Range};
 
 use hltas::types::*;
+use num_bigint::ToBigUint;
 use rust_decimal_macros::dec;
 
 use crate::analyzer::{analyze_hltas, FrametimeStats};
@@ -137,7 +138,7 @@ fn save_count() {
 
     let result = analyze_hltas(&hltas).unwrap();
 
-    assert_eq!(result.save_count, 3);
+    assert_eq!(result.save_count, 3.to_biguint().unwrap());
 }
 
 #[test]
@@ -162,7 +163,7 @@ fn shared_seed_set_count() {
 
     let result = analyze_hltas(&hltas).unwrap();
 
-    assert_eq!(result.shared_seed_set_count, 3);
+    assert_eq!(result.shared_seed_set_count, 3.to_biguint().unwrap());
 }
 
 #[test]
@@ -191,7 +192,7 @@ fn button_set_count() {
 
     let result = analyze_hltas(&hltas).unwrap();
 
-    assert_eq!(result.button_set_count, 2);
+    assert_eq!(result.button_set_count, 2.to_biguint().unwrap());
 }
 
 #[test]
@@ -216,7 +217,7 @@ fn lgagst_min_speed_set_count() {
 
     let result = analyze_hltas(&hltas).unwrap();
 
-    assert_eq!(result.lgagst_min_speed_set_count, 3);
+    assert_eq!(result.lgagst_min_speed_set_count, 3.to_biguint().unwrap());
 }
 
 #[test]
@@ -240,7 +241,7 @@ fn reset_count() {
 
     let result = analyze_hltas(&hltas).unwrap();
 
-    assert_eq!(result.reset_count, 2);
+    assert_eq!(result.reset_count, 2.to_biguint().unwrap());
 }
 
 #[test]
@@ -264,7 +265,7 @@ fn comment_count() {
 
     let result = analyze_hltas(&hltas).unwrap();
 
-    assert_eq!(result.comment_count, 2);
+    assert_eq!(result.comment_count, 2.to_biguint().unwrap());
 }
 
 #[test]
@@ -296,7 +297,7 @@ fn change_angle_count() {
 
     let result = analyze_hltas(&hltas).unwrap();
 
-    assert_eq!(result.change_angle_count, 2);
+    assert_eq!(result.change_angle_count, 2.to_biguint().unwrap());
 }
 
 #[test]
@@ -320,5 +321,5 @@ fn target_yaw_override_count() {
 
     let result = analyze_hltas(&hltas).unwrap();
 
-    assert_eq!(result.target_yaw_override_count, 2);
+    assert_eq!(result.target_yaw_override_count, 2.to_biguint().unwrap());
 }

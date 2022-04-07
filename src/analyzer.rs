@@ -4,12 +4,17 @@ use hltas::{
     types::{LeaveGroundActionType, Line},
     HLTAS,
 };
-use rust_decimal::Decimal;
+use num_bigint::BigUint;
+use rust_decimal::{
+    prelude::{One, Zero},
+    Decimal,
+};
 use rust_decimal_macros::dec;
 use thiserror::Error;
 
 use ansi_term::Colour::*;
 
+/// Function that analyzes a HLTAS, returning a [`AnalyzerResult`][AnalyzerResult] type on success.
 pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
     let mut final_time = Range {
         start: dec!(0.0),
@@ -17,14 +22,14 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
     };
     let mut estimated_time = Decimal::ZERO;
     let mut frametime_stats = HashMap::new();
-    let mut save_count = 0;
-    let mut shared_seed_set_count = 0;
-    let mut button_set_count = 0;
-    let mut lgagst_min_speed_set_count = 0;
-    let mut reset_count = 0;
-    let mut comment_count = 0;
-    let mut change_angle_count = 0;
-    let mut target_yaw_override_count = 0;
+    let mut save_count = BigUint::zero();
+    let mut shared_seed_set_count = BigUint::zero();
+    let mut button_set_count = BigUint::zero();
+    let mut lgagst_min_speed_set_count = BigUint::zero();
+    let mut reset_count = BigUint::zero();
+    let mut comment_count = BigUint::zero();
+    let mut change_angle_count = BigUint::zero();
+    let mut target_yaw_override_count = BigUint::zero();
 
     // used for tracking the 0ms frame estimation
     let mut zero_ms_counter = Decimal::ZERO;
@@ -87,16 +92,16 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
                     fb_time
                 };
             }
-            Line::Save(_) => save_count += 1,
-            Line::SharedSeed(_) => shared_seed_set_count += 1,
-            Line::Buttons(_) => button_set_count += 1,
-            Line::LGAGSTMinSpeed(_) => lgagst_min_speed_set_count += 1,
-            Line::Reset { .. } => reset_count += 1,
-            Line::Comment(_) => comment_count += 1,
+            Line::Save(_) => save_count += BigUint::one(),
+            Line::SharedSeed(_) => shared_seed_set_count += BigUint::one(),
+            Line::Buttons(_) => button_set_count += BigUint::one(),
+            Line::LGAGSTMinSpeed(_) => lgagst_min_speed_set_count += BigUint::one(),
+            Line::Reset { .. } => reset_count += BigUint::one(),
+            Line::Comment(_) => comment_count += BigUint::one(),
             Line::VectorialStrafing(_) => (),
             Line::VectorialStrafingConstraints(_) => (),
-            Line::Change(_) => change_angle_count += 1,
-            Line::TargetYawOverride(_) => target_yaw_override_count += 1,
+            Line::Change(_) => change_angle_count += BigUint::one(),
+            Line::TargetYawOverride(_) => target_yaw_override_count += BigUint::one(),
         }
     }
 
@@ -144,14 +149,14 @@ pub struct AnalyzerResult {
     pub final_time: Range<Decimal>,
     pub estimated_time: Decimal,
     pub frametime_stats: Vec<FrametimeStats>,
-    pub save_count: u128,
-    pub shared_seed_set_count: u128,
-    pub button_set_count: u128,
-    pub lgagst_min_speed_set_count: u128,
-    pub reset_count: u128,
-    pub comment_count: u128,
-    pub change_angle_count: u128,
-    pub target_yaw_override_count: u128,
+    pub save_count: BigUint,
+    pub shared_seed_set_count: BigUint,
+    pub button_set_count: BigUint,
+    pub lgagst_min_speed_set_count: BigUint,
+    pub reset_count: BigUint,
+    pub comment_count: BigUint,
+    pub change_angle_count: BigUint,
+    pub target_yaw_override_count: BigUint,
 }
 
 impl Display for AnalyzerResult {
