@@ -36,28 +36,14 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
                     false
                 };
 
-                let frame_count_range = {
-                    let frame_count = fb.frame_count.get() as u128;
-                    if zero_ms_ducktap {
-                        Range {
-                            start: 0,
-                            end: frame_count,
-                        }
-                    } else {
-                        Range {
-                            start: frame_count,
-                            end: frame_count,
-                        }
-                    }
-                };
+                let frame_count = fb.frame_count.get() as u128;
 
                 frametime_stats
                     .entry(&fb.frame_time)
-                    .and_modify(|frame_count: &mut Range<u128>| {
-                        frame_count.start += frame_count_range.start;
-                        frame_count.end += frame_count_range.end;
+                    .and_modify(|count: &mut u128| {
+                        *count += frame_count;
                     })
-                    .or_insert(frame_count_range);
+                    .or_insert(frame_count);
 
                 // add final time range
                 let frame_time = fb.frame_time.parse::<Decimal>()?;
@@ -82,12 +68,18 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
     }
 
     let frametime_stats = {
-        let mut frametime_stats_res = HashMap::new();
+        let mut frametime_stats_res = Vec::new();
 
         for (s, v) in frametime_stats {
             let s = s.parse::<Decimal>()?;
-            frametime_stats_res.insert(s, v);
+
+            frametime_stats_res.push(FrametimeStats {
+                frametime: s,
+                frame_count: v,
+            });
         }
+
+        frametime_stats_res.sort_by(|f, s| f.frametime.cmp(&s.frametime));
 
         frametime_stats_res
     };
@@ -114,7 +106,7 @@ pub enum Error {
 
 pub struct AnalyzerResult {
     pub final_time: Range<Decimal>,
-    pub frametime_stats: HashMap<Decimal, Range<u128>>,
+    pub frametime_stats: Vec<FrametimeStats>,
     pub save_count: u128,
     pub shared_seed_set_count: u128,
     pub button_set_count: u128,
@@ -123,4 +115,10 @@ pub struct AnalyzerResult {
     pub comment_count: u128,
     pub change_angle_count: u128,
     pub target_yaw_override_count: u128,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FrametimeStats {
+    pub frametime: Decimal,
+    pub frame_count: u128,
 }
