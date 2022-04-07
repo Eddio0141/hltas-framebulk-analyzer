@@ -8,6 +8,8 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use thiserror::Error;
 
+use ansi_term::Colour::*;
+
 pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
     let mut final_time = Range {
         start: dec!(0.0),
@@ -129,13 +131,15 @@ impl Display for AnalyzerResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(
             f,
-            "Final time: {} ~ {}",
-            self.final_time.start, self.final_time.end
+            "{}: {}s ~ {}s",
+            Red.paint("Final Time"),
+            self.final_time.start,
+            self.final_time.end
         )?;
         writeln!(f)?;
-        writeln!(f, "Frametime stats")?;
+        writeln!(f, "{}", Green.paint("Frametime stats"))?;
         for stats in &self.frametime_stats {
-            writeln!(f, "{stats}")?;
+            writeln!(f, "    {stats}")?;
         }
         writeln!(f)?;
         writeln!(f, "Save count: {}", self.save_count)?;
@@ -165,10 +169,6 @@ pub struct FrametimeStats {
 
 impl Display for FrametimeStats {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(
-            f,
-            "frametime {} for {} frames",
-            self.frametime, self.frame_count
-        )
+        write!(f, "{}ms for {} frames", self.frametime, self.frame_count)
     }
 }
