@@ -36,17 +36,23 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
                     false
                 };
 
+                let frame_time =
+                    fb.frame_time
+                        .parse::<Decimal>()
+                        .map_err(|err| Error::FrametimeParseError {
+                            source: err,
+                            string: &fb.frame_time,
+                        })?;
                 let frame_count = fb.frame_count.get() as u128;
 
                 frametime_stats
-                    .entry(&fb.frame_time)
+                    .entry(frame_time)
                     .and_modify(|count: &mut u128| {
                         *count += frame_count;
                     })
                     .or_insert(frame_count);
 
                 // add final time range
-                let frame_time = fb.frame_time.parse::<Decimal>()?;
                 let fb_time = frame_time * Decimal::from(fb.frame_count.get());
 
                 if !zero_ms_ducktap {
@@ -71,8 +77,6 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
         let mut frametime_stats_res = Vec::new();
 
         for (s, v) in frametime_stats {
-            let s = s.parse::<Decimal>()?;
-
             frametime_stats_res.push(FrametimeStats {
                 frametime: s,
                 frame_count: v,
@@ -99,9 +103,13 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
 }
 
 #[derive(Debug, Error)]
-pub enum Error {
-    #[error(transparent)]
-    DecimalParseError(#[from] rust_decimal::Error),
+pub enum Error<'a> {
+    #[error("Failed to parse frametime {string} as a decimal")]
+    FrametimeParseError {
+        #[source]
+        source: rust_decimal::Error,
+        string: &'a str,
+    },
 }
 
 pub struct AnalyzerResult {
