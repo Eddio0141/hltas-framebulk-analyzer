@@ -15,6 +15,7 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
         start: dec!(0.0),
         end: dec!(0.0),
     };
+    let mut estimated_time = Decimal::ZERO;
     let mut frametime_stats = HashMap::new();
     let mut save_count = 0;
     let mut shared_seed_set_count = 0;
@@ -24,6 +25,9 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
     let mut comment_count = 0;
     let mut change_angle_count = 0;
     let mut target_yaw_override_count = 0;
+
+    // used for tracking the 0ms frame estimation
+    let mut zero_ms_counter = Decimal::ZERO;
 
     for line in &hltas.lines {
         match line {
@@ -61,6 +65,27 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
                     final_time.start += fb_time;
                 }
                 final_time.end += fb_time;
+
+                // add estimated time
+                estimated_time += if zero_ms_ducktap {
+                    // simulate flat ground 0ms ducktap
+                    // 0.201s to reach the ground, then the next frame becomes 0ms
+                    let mut fb_time_with_zero_ms = Decimal::ZERO;
+
+                    for _ in 0..fb.frame_count.get() {
+                        zero_ms_counter += frame_time;
+
+                        if zero_ms_counter > dec!(0.201) {
+                            zero_ms_counter = Decimal::ZERO;
+                        } else {
+                            fb_time_with_zero_ms += frame_time;
+                        }
+                    }
+
+                    fb_time_with_zero_ms
+                } else {
+                    fb_time
+                };
             }
             Line::Save(_) => save_count += 1,
             Line::SharedSeed(_) => shared_seed_set_count += 1,
@@ -92,6 +117,7 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
 
     Ok(AnalyzerResult {
         final_time,
+        estimated_time,
         frametime_stats,
         save_count,
         shared_seed_set_count,
@@ -116,6 +142,7 @@ pub enum Error<'a> {
 
 pub struct AnalyzerResult {
     pub final_time: Range<Decimal>,
+    pub estimated_time: Decimal,
     pub frametime_stats: Vec<FrametimeStats>,
     pub save_count: u128,
     pub shared_seed_set_count: u128,
@@ -136,26 +163,59 @@ impl Display for AnalyzerResult {
             self.final_time.start,
             self.final_time.end
         )?;
+        writeln!(
+            f,
+            "{}: {}s",
+            Blue.paint("Estimated Time"),
+            self.estimated_time
+        )?;
         writeln!(f)?;
         writeln!(f, "{}", Green.paint("Frametime stats"))?;
         for stats in &self.frametime_stats {
             writeln!(f, "    {stats}")?;
         }
         writeln!(f)?;
-        writeln!(f, "Save count: {}", self.save_count)?;
-        writeln!(f, "Shared seed set count: {}", self.shared_seed_set_count)?;
-        writeln!(f, "Button set count: {}", self.button_set_count)?;
+        writeln!(f, "{}: {}", Fixed(93).paint("Save count"), self.save_count)?;
         writeln!(
             f,
-            "LGAGST min speed set count: {}",
+            "{}: {}",
+            Fixed(99).paint("Shared seed set count"),
+            self.shared_seed_set_count
+        )?;
+        writeln!(
+            f,
+            "{}: {}",
+            Fixed(105).paint("Button set count"),
+            self.button_set_count
+        )?;
+        writeln!(
+            f,
+            "{}: {}",
+            Fixed(111).paint("LGAGST min speed set count"),
             self.lgagst_min_speed_set_count
         )?;
-        writeln!(f, "Reset count: {}", self.reset_count)?;
-        writeln!(f, "Comment count: {}", self.comment_count)?;
-        writeln!(f, "Change angle count: {}", self.change_angle_count)?;
         writeln!(
             f,
-            "Target yaw override count: {}",
+            "{}: {}",
+            Fixed(117).paint("Reset count"),
+            self.reset_count
+        )?;
+        writeln!(
+            f,
+            "{}: {}",
+            Fixed(123).paint("Comment count"),
+            self.comment_count
+        )?;
+        writeln!(
+            f,
+            "{}: {}",
+            Fixed(129).paint("Change angle count"),
+            self.change_angle_count
+        )?;
+        writeln!(
+            f,
+            "{}: {}",
+            Fixed(135).paint("Target yaw override count"),
             self.target_yaw_override_count
         )
     }
