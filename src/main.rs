@@ -4,7 +4,7 @@ use hltas::HLTAS;
 use hltas_framebulk_analyzer::analyzer::analyze_hltas;
 
 fn main() {
-    let bar = "==========================================================";
+    let bar = "=".repeat(60);
 
     loop {
         // wait for input
