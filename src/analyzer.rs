@@ -1,6 +1,6 @@
 //! Contains everything required to analyze a hltas file.
 
-use std::{collections::HashMap, fmt::Display, ops::Range};
+use std::{collections::HashMap, fmt::Display, ops::Range, str::FromStr};
 
 use hltas::{
     types::{LeaveGroundActionType, Line},
@@ -36,6 +36,16 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
 
     // used for tracking the 0ms frame estimation
     let mut zero_ms_counter = Decimal::ZERO;
+
+    let zero_ms_frametime = match &hltas.properties.frametime_0ms {
+        Some(zero_ms) => {
+            Decimal::from_str(&zero_ms).map_err(|err| Error::ZeroMsFrametimeParseError {
+                source: err,
+                string: &zero_ms,
+            })?
+        }
+        None => Decimal::new(1, 10),
+    };
 
     for line in &hltas.lines {
         match line {
@@ -85,6 +95,7 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
 
                         if zero_ms_counter > dec!(0.201) {
                             zero_ms_counter = Decimal::ZERO;
+                            fb_time_with_zero_ms += zero_ms_frametime;
                         } else {
                             fb_time_with_zero_ms += frame_time;
                         }
@@ -145,6 +156,14 @@ pub enum Error<'a> {
     /// Happens if the frametime can't be parse as a [`Decimal`](rust_decimal::Decimal).
     #[error("Failed to parse frametime {string} as a decimal")]
     FrametimeParseError {
+        #[source]
+        source: rust_decimal::Error,
+        string: &'a str,
+    },
+    /// Error when parsing a 0ms frametime property from a string.
+    /// Happens if the frametime can't be parse as a [`Decimal`](rust_decimal::Decimal).
+    #[error("Failed to parse 0ms frametime {string} as a decimal")]
+    ZeroMsFrametimeParseError {
         #[source]
         source: rust_decimal::Error,
         string: &'a str,
