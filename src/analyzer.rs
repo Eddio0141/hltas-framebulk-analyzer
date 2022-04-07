@@ -15,6 +15,7 @@ use thiserror::Error;
 use ansi_term::Colour::*;
 
 /// Function that analyzes a HLTAS, returning a [`AnalyzerResult`][AnalyzerResult] type on success.
+/// - Only can fail if the frametime can't be parsed as a [`Decimal`](rust_decimal::Decimal).
 pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
     let mut final_time = Range {
         start: dec!(0.0),
@@ -135,8 +136,11 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
     })
 }
 
+/// Error type for the [`analyze_hltas`][analyze_hltas] function.
 #[derive(Debug, Error)]
 pub enum Error<'a> {
+    /// Error when parsing a frametime string.
+    /// Happens if the frametime can't be parse as a [`Decimal`](rust_decimal::Decimal).
     #[error("Failed to parse frametime {string} as a decimal")]
     FrametimeParseError {
         #[source]
@@ -145,17 +149,32 @@ pub enum Error<'a> {
     },
 }
 
+/// Analysis result of a HLTAS.
 pub struct AnalyzerResult {
+    /// The final time of the HLTAS.
+    /// - `start` will be the shortest possible time of the hltas, assuming all 0ms ducktap framebulks are 0ms.
+    /// - `end` will be the longest possible time of the hltas, assuming all 0ms ducktap framebulks aren't 0ms.
     pub final_time: Range<Decimal>,
+    /// The estimated time of the HLTAS.
+    /// Assumes the 0ms ducktap framebulks are landing on a flat ground, with normal gravity.
     pub estimated_time: Decimal,
+    /// The frametime stats of the HLTAS, containing `frametime` and total `frame_count`.
     pub frametime_stats: Vec<FrametimeStats>,
+    /// The number of `save` special frames in the HLTAS.
     pub save_count: BigUint,
+    /// The number of `shared_seed` sets in the HLTAS.
     pub shared_seed_set_count: BigUint,
+    /// The number of strafing `button` mapping in the HLTAS, including resetting.
     pub button_set_count: BigUint,
+    /// The number of `lgagst_min_speed` sets in the HLTAS.
     pub lgagst_min_speed_set_count: BigUint,
+    /// The number of `reset` done in the HLTAS.
     pub reset_count: BigUint,
+    /// The number of `comment` in the HLTAS.
     pub comment_count: BigUint,
+    /// The number of `change` in the HLTAS.
     pub change_angle_count: BigUint,
+    /// The number of `target_yaw_override` in the HLTAS.
     pub target_yaw_override_count: BigUint,
 }
 
@@ -288,6 +307,8 @@ impl Display for AnalyzerResult {
     }
 }
 
+/// The frametime stats of a HLTAS.
+/// Contains `frametime` and total `frame_count`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FrametimeStats {
     pub frametime: Decimal,
