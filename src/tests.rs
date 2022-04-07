@@ -193,3 +193,28 @@ fn button_set_count() {
 
     assert_eq!(result.button_set_count, 2);
 }
+
+#[test]
+fn lgagst_min_speed_set_count() {
+    let hltas = HLTAS {
+        properties: Default::default(),
+        lines: vec![
+            Line::LGAGSTMinSpeed(0.0),
+            Line::LGAGSTMinSpeed(0.0),
+            Line::FrameBulk(FrameBulk {
+                frame_time: "0.001".to_string(),
+                frame_count: NonZeroU32::new(100).unwrap(),
+                auto_actions: Default::default(),
+                movement_keys: Default::default(),
+                action_keys: Default::default(),
+                pitch: Default::default(),
+                console_command: Default::default(),
+            }),
+            Line::LGAGSTMinSpeed(0.0),
+        ],
+    };
+
+    let result = analyze_hltas(&hltas).unwrap();
+
+    assert_eq!(result.lgagst_min_speed_set_count, 3);
+}
