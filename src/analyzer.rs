@@ -1,3 +1,5 @@
+//! Contains everything required to analyze a hltas file.
+
 use std::{collections::HashMap, fmt::Display, ops::Range};
 
 use hltas::{
