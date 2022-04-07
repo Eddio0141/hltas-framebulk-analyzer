@@ -218,3 +218,107 @@ fn lgagst_min_speed_set_count() {
 
     assert_eq!(result.lgagst_min_speed_set_count, 3);
 }
+
+#[test]
+fn reset_count() {
+    let hltas = HLTAS {
+        properties: Default::default(),
+        lines: vec![
+            Line::Reset { non_shared_seed: 0 },
+            Line::FrameBulk(FrameBulk {
+                frame_time: "0.001".to_string(),
+                frame_count: NonZeroU32::new(100).unwrap(),
+                auto_actions: Default::default(),
+                movement_keys: Default::default(),
+                action_keys: Default::default(),
+                pitch: Default::default(),
+                console_command: Default::default(),
+            }),
+            Line::Reset { non_shared_seed: 1 },
+        ],
+    };
+
+    let result = analyze_hltas(&hltas).unwrap();
+
+    assert_eq!(result.reset_count, 2);
+}
+
+#[test]
+fn comment_count() {
+    let hltas = HLTAS {
+        properties: Default::default(),
+        lines: vec![
+            Line::Comment("comment".to_string()),
+            Line::FrameBulk(FrameBulk {
+                frame_time: "0.001".to_string(),
+                frame_count: NonZeroU32::new(100).unwrap(),
+                auto_actions: Default::default(),
+                movement_keys: Default::default(),
+                action_keys: Default::default(),
+                pitch: Default::default(),
+                console_command: Default::default(),
+            }),
+            Line::Comment("comment2".to_string()),
+        ],
+    };
+
+    let result = analyze_hltas(&hltas).unwrap();
+
+    assert_eq!(result.comment_count, 2);
+}
+
+#[test]
+fn change_angle_count() {
+    let hltas = HLTAS {
+        properties: Default::default(),
+        lines: vec![
+            Line::Change(Change {
+                target: ChangeTarget::Pitch,
+                final_value: 50.0,
+                over: 0.4,
+            }),
+            Line::FrameBulk(FrameBulk {
+                frame_time: "0.001".to_string(),
+                frame_count: NonZeroU32::new(100).unwrap(),
+                auto_actions: Default::default(),
+                movement_keys: Default::default(),
+                action_keys: Default::default(),
+                pitch: Default::default(),
+                console_command: Default::default(),
+            }),
+            Line::Change(Change {
+                target: ChangeTarget::Pitch,
+                final_value: 50.0,
+                over: 0.4,
+            }),
+        ],
+    };
+
+    let result = analyze_hltas(&hltas).unwrap();
+
+    assert_eq!(result.change_angle_count, 2);
+}
+
+#[test]
+fn target_yaw_override_count() {
+    let hltas = HLTAS {
+        properties: Default::default(),
+        lines: vec![
+            Line::TargetYawOverride(vec![0.1, 0.2, 0.3]),
+            Line::FrameBulk(FrameBulk {
+                frame_time: "0.001".to_string(),
+                frame_count: NonZeroU32::new(100).unwrap(),
+                auto_actions: Default::default(),
+                movement_keys: Default::default(),
+                action_keys: Default::default(),
+                pitch: Default::default(),
+                console_command: Default::default(),
+            }),
+            Line::TargetYawOverride(vec![0.1, 0.2, 0.3]),
+        ],
+    };
+
+    let result = analyze_hltas(&hltas).unwrap();
+
+    assert_eq!(result.target_yaw_override_count, 2);
+}
