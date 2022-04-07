@@ -220,6 +220,9 @@ impl Display for AnalyzerResult {
             Blue.paint("Estimated time"),
             estimated_time_string
         )?;
+
+        writeln!(f)?;
+
         writeln!(
             f,
             "{}: {}s ~ {}s",
