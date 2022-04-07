@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ops::Range};
+use std::{collections::HashMap, fmt::Display, ops::Range};
 
 use hltas::{
     types::{LeaveGroundActionType, Line},
@@ -125,8 +125,50 @@ pub struct AnalyzerResult {
     pub target_yaw_override_count: u128,
 }
 
+impl Display for AnalyzerResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "Final time: {} ~ {}",
+            self.final_time.start, self.final_time.end
+        )?;
+        writeln!(f)?;
+        writeln!(f, "Frametime stats")?;
+        for stats in &self.frametime_stats {
+            writeln!(f, "{stats}")?;
+        }
+        writeln!(f)?;
+        writeln!(f, "Save count: {}", self.save_count)?;
+        writeln!(f, "Shared seed set count: {}", self.shared_seed_set_count)?;
+        writeln!(f, "Button set count: {}", self.button_set_count)?;
+        writeln!(
+            f,
+            "LGAGST min speed set count: {}",
+            self.lgagst_min_speed_set_count
+        )?;
+        writeln!(f, "Reset count: {}", self.reset_count)?;
+        writeln!(f, "Comment count: {}", self.comment_count)?;
+        writeln!(f, "Change angle count: {}", self.change_angle_count)?;
+        writeln!(
+            f,
+            "Target yaw override count: {}",
+            self.target_yaw_override_count
+        )
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FrametimeStats {
     pub frametime: Decimal,
     pub frame_count: u128,
+}
+
+impl Display for FrametimeStats {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "frametime {} for {} frames",
+            self.frametime, self.frame_count
+        )
+    }
 }
