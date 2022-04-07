@@ -39,9 +39,9 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
 
     let zero_ms_frametime = match &hltas.properties.frametime_0ms {
         Some(zero_ms) => {
-            Decimal::from_str(&zero_ms).map_err(|err| Error::ZeroMsFrametimeParseError {
+            Decimal::from_str(zero_ms).map_err(|err| Error::ZeroMsFrametimeParseError {
                 source: err,
-                string: &zero_ms,
+                string: zero_ms,
             })?
         }
         None => Decimal::new(1, 10),
