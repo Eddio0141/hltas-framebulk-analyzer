@@ -156,17 +156,76 @@ pub struct AnalyzerResult {
 
 impl Display for AnalyzerResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let minutes = |seconds: &Decimal| (seconds / dec!(60.0)).floor();
+        let sub_seconds = |seconds: &Decimal| (seconds % dec!(60.0)).round_dp(3);
+
+        let final_time_minutes = Range {
+            start: minutes(&self.final_time.start),
+            end: minutes(&self.final_time.end),
+        };
+        let final_time_sub_seconds = Range {
+            start: sub_seconds(&self.final_time.start),
+            end: sub_seconds(&self.final_time.end),
+        };
+
+        let estimated_time_minutes = minutes(&self.estimated_time);
+        let estimated_time_sub_seconds = sub_seconds(&self.estimated_time);
+
+        let final_time_string = {
+            let start = if final_time_minutes.start.is_zero() {
+                format!("{}s", final_time_sub_seconds.start)
+            } else {
+                format!(
+                    "{}m {}s",
+                    final_time_minutes.start, final_time_sub_seconds.start
+                )
+            };
+
+            let end = if final_time_minutes.end.is_zero() {
+                format!("{}s", final_time_sub_seconds.end)
+            } else {
+                format!(
+                    "{}m {}s",
+                    final_time_minutes.end, final_time_sub_seconds.end
+                )
+            };
+
+            (start, end)
+        };
+
+        let estimated_time_string = if estimated_time_minutes.is_zero() {
+            format!("{}s", estimated_time_sub_seconds)
+        } else {
+            format!(
+                "{}m {}s",
+                estimated_time_minutes, estimated_time_sub_seconds
+            )
+        };
+
+        writeln!(
+            f,
+            "{}: {} ~ {}",
+            Red.paint("Final time"),
+            final_time_string.0,
+            final_time_string.1
+        )?;
+        writeln!(
+            f,
+            "{}: {}",
+            Blue.paint("Estimated time"),
+            estimated_time_string
+        )?;
         writeln!(
             f,
             "{}: {}s ~ {}s",
-            Red.paint("Final Time"),
+            RGB(0xFF, 0x5F, 0x1F).paint("Final time secs"),
             self.final_time.start,
             self.final_time.end
         )?;
         writeln!(
             f,
             "{}: {}s",
-            Blue.paint("Estimated Time"),
+            RGB(0x29, 0xB6, 0xF6).paint("Estimated secs"),
             self.estimated_time
         )?;
         writeln!(f)?;
