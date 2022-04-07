@@ -114,3 +114,28 @@ fn frametime_stats() {
         ]
     );
 }
+
+#[test]
+fn save_count() {
+    let hltas = HLTAS {
+        properties: Default::default(),
+        lines: vec![
+            Line::Save("buffer".to_string()),
+            Line::FrameBulk(FrameBulk {
+                frame_time: "0.001".to_string(),
+                frame_count: NonZeroU32::new(100).unwrap(),
+                auto_actions: Default::default(),
+                movement_keys: Default::default(),
+                action_keys: Default::default(),
+                pitch: Default::default(),
+                console_command: Default::default(),
+            }),
+            Line::Save("buffer2".to_string()),
+            Line::Save("buffer3".to_string()),
+        ],
+    };
+
+    let result = analyze_hltas(&hltas).unwrap();
+
+    assert_eq!(result.save_count, 3);
+}
