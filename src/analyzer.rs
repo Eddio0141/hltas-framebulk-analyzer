@@ -84,7 +84,7 @@ impl Analyzer {
         }
 
         Ok(AnalyzerResult {
-            final_time_range,
+            final_time: final_time_range,
             frametime_stats: frametime_stats
                 .into_iter()
                 .map(|(s, v)| (s.to_owned(), v))
@@ -108,7 +108,7 @@ pub enum Error {
 }
 
 pub struct AnalyzerResult {
-    pub final_time_range: Range<f64>,
+    pub final_time: Range<f64>,
     pub frametime_stats: HashMap<String, Range<u128>>,
     pub save_count: u128,
     pub shared_seed_set_count: u128,
