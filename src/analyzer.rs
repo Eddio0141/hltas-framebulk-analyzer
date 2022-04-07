@@ -1,18 +1,20 @@
-use std::{collections::HashMap, num::ParseFloatError, ops::Range};
+use std::{collections::HashMap, ops::Range};
 
 use hltas::{
     types::{LeaveGroundActionType, Line},
     HLTAS,
 };
+use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
 use thiserror::Error;
 
 pub struct Analyzer;
 
 impl Analyzer {
     pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
-        let mut final_time_range = Range {
-            start: 0.0,
-            end: 0.0,
+        let mut final_time = Range {
+            start: dec!(0.0),
+            end: dec!(0.0),
         };
         let mut frametime_stats = HashMap::new();
         let mut save_count = 0;
@@ -62,13 +64,13 @@ impl Analyzer {
                         .or_insert(frame_count_range);
 
                     // add final time range
-                    let frame_time = fb.frame_time.parse::<f32>()? as f64;
-                    let fb_time = frame_time * fb.frame_count.get() as f64;
+                    let frame_time = fb.frame_time.parse::<Decimal>()?;
+                    let fb_time = frame_time * Decimal::from(fb.frame_count.get());
 
                     if !zero_ms_ducktap {
-                        final_time_range.start += fb_time;
+                        final_time.start += fb_time;
                     }
-                    final_time_range.end += fb_time;
+                    final_time.end += fb_time;
                 }
                 Line::Save(_) => save_count += 1,
                 Line::SharedSeed(_) => shared_seed_set_count += 1,
@@ -83,12 +85,20 @@ impl Analyzer {
             }
         }
 
+        let frametime_stats = {
+            let mut frametime_stats_res = HashMap::new();
+
+            for (s, v) in frametime_stats {
+                let s = s.parse::<Decimal>()?;
+                frametime_stats_res.insert(s, v);
+            }
+
+            frametime_stats_res
+        };
+
         Ok(AnalyzerResult {
-            final_time: final_time_range,
-            frametime_stats: frametime_stats
-                .into_iter()
-                .map(|(s, v)| (s.to_owned(), v))
-                .collect(),
+            final_time,
+            frametime_stats,
             save_count,
             shared_seed_set_count,
             button_set_count,
@@ -104,12 +114,12 @@ impl Analyzer {
 #[derive(Debug, Error)]
 pub enum Error {
     #[error(transparent)]
-    ParseFloatError(#[from] ParseFloatError),
+    DecimalParseError(#[from] rust_decimal::Error),
 }
 
 pub struct AnalyzerResult {
-    pub final_time: Range<f64>,
-    pub frametime_stats: HashMap<String, Range<u128>>,
+    pub final_time: Range<Decimal>,
+    pub frametime_stats: HashMap<Decimal, Range<u128>>,
     pub save_count: u128,
     pub shared_seed_set_count: u128,
     pub button_set_count: u128,
