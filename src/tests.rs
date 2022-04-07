@@ -164,3 +164,32 @@ fn shared_seed_set_count() {
 
     assert_eq!(result.shared_seed_set_count, 3);
 }
+
+#[test]
+fn button_set_count() {
+    let hltas = HLTAS {
+        properties: Default::default(),
+        lines: vec![
+            Line::Buttons(Buttons::Reset),
+            Line::FrameBulk(FrameBulk {
+                frame_time: "0.001".to_string(),
+                frame_count: NonZeroU32::new(100).unwrap(),
+                auto_actions: Default::default(),
+                movement_keys: Default::default(),
+                action_keys: Default::default(),
+                pitch: Default::default(),
+                console_command: Default::default(),
+            }),
+            Line::Buttons(Buttons::Set {
+                air_left: Button::Back,
+                air_right: Button::Back,
+                ground_left: Button::Back,
+                ground_right: Button::Back,
+            }),
+        ],
+    };
+
+    let result = analyze_hltas(&hltas).unwrap();
+
+    assert_eq!(result.button_set_count, 2);
+}
