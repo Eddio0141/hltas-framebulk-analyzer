@@ -1,13 +1,17 @@
-use std::io::{self, Cursor};
+use std::io::{self, Cursor, Read};
 
 use hltas::HLTAS;
 use hltas_framebulk_analyzer::analyzer::analyze_hltas;
 
 fn main() {
+    let bar = "==========================================================";
+
     loop {
         // wait for input
         let mut input = String::new();
-        io::stdin().read_line(&mut input).unwrap();
+        io::stdin().read_to_string(&mut input).unwrap();
+
+        println!("\n\n{bar}");
 
         // parse input
         let hltas = match HLTAS::from_str(&input) {
@@ -37,8 +41,7 @@ fn main() {
         };
 
         // print analysis
-        println!("{}", analysis);
-        println!();
+        println!("{}{bar}\n\n", analysis);
     }
 }
 
