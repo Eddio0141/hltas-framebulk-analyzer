@@ -139,3 +139,28 @@ fn save_count() {
 
     assert_eq!(result.save_count, 3);
 }
+
+#[test]
+fn shared_seed_set_count() {
+    let hltas = HLTAS {
+        properties: Default::default(),
+        lines: vec![
+            Line::SharedSeed(0),
+            Line::SharedSeed(1),
+            Line::FrameBulk(FrameBulk {
+                frame_time: "0.001".to_string(),
+                frame_count: NonZeroU32::new(100).unwrap(),
+                auto_actions: Default::default(),
+                movement_keys: Default::default(),
+                action_keys: Default::default(),
+                pitch: Default::default(),
+                console_command: Default::default(),
+            }),
+            Line::SharedSeed(2),
+        ],
+    };
+
+    let result = analyze_hltas(&hltas).unwrap();
+
+    assert_eq!(result.shared_seed_set_count, 3);
+}
