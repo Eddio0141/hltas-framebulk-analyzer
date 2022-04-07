@@ -45,7 +45,7 @@ fn main() {
     }
 }
 
-pub fn hltas_header_on_framebulks_str(framebulks: &str) -> String {
+fn hltas_header_on_framebulks_str(framebulks: &str) -> String {
     // making a hltas string from the default hltas to append the framebulks to
     let mut hltas = Cursor::new(Vec::new());
     HLTAS::default().to_writer(&mut hltas).unwrap();
