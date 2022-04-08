@@ -1,6 +1,11 @@
 # Tool that analysis a hltas file or framebulks
 
-## Example
+# How to use the app
+- Enter a full hltas file by pasting in the console, or framebulks without the full file
+- Enter EOF which can be done with `ctrl+D` on linux / macOS, or `ctrl+Z` on windows
+- Exit by force quitting with `ctrl+c`
+
+# Library usage example
 ```rust
 let hltas = HLTAS {
     properties: Properties::default(),
@@ -44,7 +49,7 @@ assert_eq!(analysis.frametime_stats, vec![
 ]);
 ```
 
-## Q & A
+# Q & A
 - Why is this colourful?
 - It looks cool thats why
 
