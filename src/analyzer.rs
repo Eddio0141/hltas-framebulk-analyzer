@@ -328,7 +328,9 @@ impl Display for AnalyzerResult {
 /// Contains `frametime` and total `frame_count`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FrametimeStats {
+    /// The frametime, in milliseconds.
     pub frametime: Decimal,
+    /// The total number of frames.
     pub frame_count: BigUint,
 }
 
@@ -338,8 +340,13 @@ impl Display for FrametimeStats {
     }
 }
 
+/// The final time of a HLTAS.
+/// - `start` is the minimum final time, assuming all 0ms ducktap framebulks are 0ms.
+/// - `end` is the maximum final time, assuming all 0ms ducktap framebulks aren't 0ms.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FinalTime {
+    /// The minimum final time.
     pub start: Decimal,
+    /// The maximum final time.
     pub end: Decimal,
 }
