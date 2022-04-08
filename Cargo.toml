@@ -1,7 +1,12 @@
 [package]
 name = "hltas-framebulk-analyzer"
-version = "0.1.0"
+version = "1.0.0"
+authors = ["yuu0141 <eddio0141@gmail.com>"]
 edition = "2021"
+description = "Analyser of HLTAS files"
+license = "MIT OR Apache-2.0"
+keywords = ["hltas", "analyzer", "framebulk", "TAS", "tool assisted speedrun"]
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
