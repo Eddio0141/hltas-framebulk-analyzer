@@ -172,6 +172,7 @@ pub enum Error<'a> {
 }
 
 /// Analysis result of a HLTAS.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct AnalyzerResult {
     /// The final time of the HLTAS.
     /// - `start` will be the shortest possible time of the hltas, assuming all 0ms ducktap framebulks are 0ms.
@@ -326,7 +327,7 @@ impl Display for AnalyzerResult {
 
 /// The frametime stats of a HLTAS.
 /// Contains `frametime` and total `frame_count`.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct FrametimeStats {
     /// The frametime, in milliseconds.
     pub frametime: Decimal,
@@ -343,7 +344,7 @@ impl Display for FrametimeStats {
 /// The final time of a HLTAS.
 /// - `start` is the minimum final time, assuming all 0ms ducktap framebulks are 0ms.
 /// - `end` is the maximum final time, assuming all 0ms ducktap framebulks aren't 0ms.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct FinalTime {
     /// The minimum final time.
     pub start: Decimal,
