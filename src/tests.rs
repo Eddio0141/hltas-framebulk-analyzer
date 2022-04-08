@@ -1,10 +1,11 @@
-use std::{num::NonZeroU32, ops::Range};
+use std::num::NonZeroU32;
 
 use hltas::types::*;
-use num_bigint::ToBigUint;
+use num_bigint::{BigUint, ToBigUint};
+use rust_decimal::prelude::FromPrimitive;
 use rust_decimal_macros::dec;
 
-use crate::analyzer::{analyze_hltas, FrametimeStats};
+use crate::analyzer::{analyze_hltas, FinalTime, FrametimeStats};
 
 #[test]
 fn final_time() {
@@ -52,7 +53,7 @@ fn final_time() {
 
     assert_eq!(
         result.final_time,
-        Range {
+        FinalTime {
             start: dec!(57.290005719),
             end: dec!(72.743005719),
         }
@@ -102,15 +103,15 @@ fn frametime_stats() {
         vec![
             FrametimeStats {
                 frametime: dec!(0.001),
-                frame_count: 100,
+                frame_count: BigUint::from_u32(100).unwrap(),
             },
             FrametimeStats {
                 frametime: dec!(0.003),
-                frame_count: 5151,
+                frame_count: BigUint::from_u32(5151).unwrap(),
             },
             FrametimeStats {
                 frametime: dec!(0.010000001),
-                frame_count: 5719,
+                frame_count: BigUint::from_u32(5719).unwrap(),
             },
         ]
     );
