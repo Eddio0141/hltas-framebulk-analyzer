@@ -1,5 +1,8 @@
 # Tool that analysis a hltas file or framebulks
 
+[![crates.io](https://img.shields.io/crates/d/hltas-framebulk-analyzer)](https://crates.io/crates/hltas-framebulk-analyzer)
+[![Documentation](https://img.shields.io/docsrs/hltas-framebulk-analyzer)](https://docs.rs/hltas-framebulk-analyzer)
+
 # How to use the app
 - Enter a full hltas file by pasting in the console, or framebulks without the full file
 - Enter EOF which can be done with `ctrl+D` on linux / macOS, or `ctrl+Z` on windows
