@@ -1,6 +1,6 @@
 //! Contains everything required to analyze a hltas file.
 
-use std::{collections::HashMap, fmt::Display, ops::Range, str::FromStr};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use hltas::{
     types::{LeaveGroundActionType, Line},
@@ -8,7 +8,7 @@ use hltas::{
 };
 use num_bigint::BigUint;
 use rust_decimal::{
-    prelude::{One, Zero},
+    prelude::{FromPrimitive, One, Zero},
     Decimal,
 };
 use rust_decimal_macros::dec;
@@ -19,9 +19,9 @@ use ansi_term::Colour::*;
 /// Function that analyzes a HLTAS, returning a [`AnalyzerResult`][AnalyzerResult] type on success.
 /// - Only can fail if the frametime can't be parsed as a [`Decimal`](rust_decimal::Decimal).
 pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
-    let mut final_time = Range {
-        start: dec!(0.0),
-        end: dec!(0.0),
+    let mut final_time = FinalTime {
+        start: Decimal::ZERO,
+        end: Decimal::ZERO,
     };
     let mut estimated_time = Decimal::ZERO;
     let mut frametime_stats = HashMap::new();
@@ -67,12 +67,13 @@ pub fn analyze_hltas(hltas: &HLTAS) -> Result<AnalyzerResult, Error> {
                             source: err,
                             string: &fb.frame_time,
                         })?;
-                let frame_count = fb.frame_count.get() as u128;
+                // shouldn't be a negative value
+                let frame_count = BigUint::from_u32(fb.frame_count.get()).unwrap();
 
                 frametime_stats
                     .entry(frame_time)
-                    .and_modify(|count: &mut u128| {
-                        *count += frame_count;
+                    .and_modify(|count: &mut BigUint| {
+                        *count += &frame_count;
                     })
                     .or_insert(frame_count);
 
@@ -175,7 +176,7 @@ pub struct AnalyzerResult {
     /// The final time of the HLTAS.
     /// - `start` will be the shortest possible time of the hltas, assuming all 0ms ducktap framebulks are 0ms.
     /// - `end` will be the longest possible time of the hltas, assuming all 0ms ducktap framebulks aren't 0ms.
-    pub final_time: Range<Decimal>,
+    pub final_time: FinalTime,
     /// The estimated time of the HLTAS.
     /// Assumes the 0ms ducktap framebulks are landing on a flat ground, with normal gravity.
     pub estimated_time: Decimal,
@@ -204,14 +205,9 @@ impl Display for AnalyzerResult {
         let minutes = |seconds: &Decimal| (seconds / dec!(60.0)).floor();
         let sub_seconds = |seconds: &Decimal| (seconds % dec!(60.0)).round_dp(3);
 
-        let final_time_minutes = Range {
-            start: minutes(&self.final_time.start),
-            end: minutes(&self.final_time.end),
-        };
-        let final_time_sub_seconds = Range {
-            start: sub_seconds(&self.final_time.start),
-            end: sub_seconds(&self.final_time.end),
-        };
+        let final_time_minutes = minutes(&self.final_time.start)..minutes(&self.final_time.end);
+        let final_time_sub_seconds =
+            sub_seconds(&self.final_time.start)..sub_seconds(&self.final_time.end);
 
         let estimated_time_minutes = minutes(&self.estimated_time);
         let estimated_time_sub_seconds = sub_seconds(&self.estimated_time);
@@ -330,14 +326,20 @@ impl Display for AnalyzerResult {
 
 /// The frametime stats of a HLTAS.
 /// Contains `frametime` and total `frame_count`.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FrametimeStats {
     pub frametime: Decimal,
-    pub frame_count: u128,
+    pub frame_count: BigUint,
 }
 
 impl Display for FrametimeStats {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}ms for {} frames", self.frametime, self.frame_count)
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FinalTime {
+    pub start: Decimal,
+    pub end: Decimal,
 }
